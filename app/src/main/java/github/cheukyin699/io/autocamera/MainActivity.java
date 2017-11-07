@@ -1,17 +1,14 @@
 package github.cheukyin699.io.autocamera;
 
 import android.app.Activity;
-import android.content.Context;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Button;
+import android.widget.EditText;
 
 import java.io.File;
 import java.io.FileOutputStream;
