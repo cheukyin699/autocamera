@@ -7,4 +7,5 @@
     <string name="milliseconds_hint">Milliseconds</string>
     <string name="default_prefix">file_</string>
     <string name="default_delay">5000</string>
+    <string name="settings_text">Settings</string>
 </resources>
