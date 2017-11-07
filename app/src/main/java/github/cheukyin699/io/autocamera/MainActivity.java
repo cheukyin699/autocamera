@@ -14,7 +14,6 @@ import android.widget.EditText;
 import android.widget.Button;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 public class MainActivity extends Activity {
@@ -22,9 +21,9 @@ public class MainActivity extends Activity {
     SurfaceView surface;
     Button lapseToggle;
     EditText lapseText;
+    EditText filePrefix;
 
     boolean isLapsing;
-    long delay;
     long lapseNumber;
 
     @Override
@@ -35,37 +34,16 @@ public class MainActivity extends Activity {
         surface = findViewById(R.id.surfaceView);
         lapseToggle = findViewById(R.id.lapseBt);
         lapseText = findViewById(R.id.lapseDelta);
+        filePrefix = findViewById(R.id.filePrefix);
         isLapsing = false;
-        delay = 1000;
         lapseNumber = 0;
-
-        lapseText.setText(Double.toString(delay));
-
-        lapseText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                try {
-                    delay = Long.valueOf(editable.toString());
-                } catch (Exception e) {
-                    Log.d("LONG", e.getMessage());
-                }
-            }
-        });
 
         lapseToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final long delay = Long.valueOf(lapseText.getText().toString());
                 isLapsing = !isLapsing;
+
                 if (isLapsing) {
                     // Set up threading
                     Thread t = new Thread() {
@@ -80,25 +58,12 @@ public class MainActivity extends Activity {
 
                                 // Takes lots of pics!
                                 while (isLapsing) {
-                                    Camera.PictureCallback callback = new Camera.PictureCallback() {
-                                        @Override
-                                        public void onPictureTaken(byte[] bytes, Camera camera) {
-                                            File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                                            File img = new File(dir, lapseNumber + ".jpg");
-
-                                            try {
-                                                FileOutputStream of = new FileOutputStream(img);
-                                                of.write(bytes);
-                                                of.close();
-
-                                                Log.d("FILENAME", img.getAbsolutePath());
-                                            } catch (Exception e) {
-                                                Log.e("FILE", e.getMessage());
-                                            }
-                                        }
-                                    };
-                                    c.takePicture(null, null, callback);
-                                    lapseNumber++;
+                                    String prefix = filePrefix.getText().toString();
+                                    c.takePicture(
+                                            null,
+                                            null,
+                                            new SavePictureCallback(prefix, lapseNumber++)
+                                    );
                                     c.startPreview();
                                     sleep(delay);
                                 }
@@ -113,8 +78,33 @@ public class MainActivity extends Activity {
                     t.start();
                 }
                 lapseText.setEnabled(!isLapsing);
+                filePrefix.setEnabled(!isLapsing);
                 lapseToggle.setText(isLapsing ? R.string.stop : R.string.start);
             }
         });
+    }
+
+    private class SavePictureCallback implements Camera.PictureCallback {
+        private String prefix;
+        private long number;
+
+        SavePictureCallback(String p, long n) {
+            prefix = p;
+            number = n;
+        }
+
+        @Override
+        public void onPictureTaken(byte[] bytes, Camera camera) {
+            File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            File img = new File(dir, prefix + number + ".jpg");
+
+            try {
+                FileOutputStream of = new FileOutputStream(img);
+                of.write(bytes);
+                of.close();
+            } catch (Exception e) {
+                Log.e("FILE", e.getMessage());
+            }
+        }
     }
 }

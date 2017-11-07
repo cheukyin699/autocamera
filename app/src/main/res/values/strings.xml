@@ -3,4 +3,8 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="middle_text">Nothing to show here</string>
+    <string name="file_prefix_hint">File Prefix</string>
+    <string name="milliseconds_hint">Milliseconds</string>
+    <string name="default_prefix">file_</string>
+    <string name="default_delay">5000</string>
 </resources>

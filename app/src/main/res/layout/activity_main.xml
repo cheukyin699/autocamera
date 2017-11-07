@@ -7,35 +7,37 @@
     tools:context="github.cheukyin699.io.autocamera.MainActivity">
 
     <EditText
-        android:id="@+id/lapseDelta"
+        android:id="@+id/filePrefix"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:ems="10"
-        android:inputType="numberSigned" />
+        android:hint="@string/file_prefix_hint"
+        android:inputType="text"
+        android:text="@string/default_prefix" />
 
     <EditText
-        android:id="@+id/filePrefix"
-        android:layout_width="wrap_content"
+        android:id="@+id/lapseDelta"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="text" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/filePrefix"
+        android:layout_toStartOf="@id/lapseBt"
+        android:ems="10"
+        android:hint="@string/milliseconds_hint"
+        android:inputType="numberSigned"
+        android:text="@string/default_delay" />
 
     <Button
         android:id="@+id/lapseBt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/lapseDelta"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/filePrefix"
         android:text="@string/start" />
 
     <SurfaceView
         android:id="@+id/surfaceView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_below="@id/lapseBt" />
 
 </RelativeLayout>
