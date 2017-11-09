@@ -1,6 +1,5 @@
 package github.cheukyin699.io.autocamera;
 
-import android.*;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -25,21 +24,18 @@ import java.io.IOException;
 
 public class MainActivity extends Activity {
 
+    private static final String APP_FOLDER = "/AutoCamera";
+    private static final int PERMISSIONS_REQUEST_CODE = 12;
+
     SurfaceView surface;
     Button lapseToggle;
     EditText lapseText;
     EditText filePrefix;
 
     boolean isLapsing;
+    boolean useCamera;
+    boolean extStorage;
     long lapseNumber;
-
-    private static final int PERMISSIONS_REQUEST_CAPTURE_IMAGE = 1;
-    private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE=2;
-    private static final int PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE=3;
-    private static final int PERMISSIONS_REQUEST_CODE=100;
-
-    private byte[] bytes;
-    private Camera camera;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -63,12 +59,14 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        camera=null;
         surface = findViewById(R.id.surfaceView);
         lapseToggle = findViewById(R.id.lapseBt);
         lapseText = findViewById(R.id.lapseDelta);
         filePrefix = findViewById(R.id.filePrefix);
+
         isLapsing = false;
+        useCamera = false;
+        extStorage = false;
         lapseNumber = 0;
 
         setPermissions();
@@ -76,6 +74,14 @@ public class MainActivity extends Activity {
         lapseToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!(useCamera && extStorage)) {
+                    Toast.makeText(getApplicationContext(),
+                            "Have you enabled the appropriate permissions yet?",
+                            Toast.LENGTH_LONG).show();
+
+                    return;
+                }
+
                 final long delay = Long.valueOf(lapseText.getText().toString());
                 isLapsing = !isLapsing;
 
@@ -103,13 +109,14 @@ public class MainActivity extends Activity {
 
         @Override
         public void onPictureTaken(byte[] bytes, Camera camera) {
-            File root = android.os.Environment.getExternalStorageDirectory();
-            File dir = new File (root.getAbsolutePath() + "/download");
+            File root = Environment.getExternalStorageDirectory();
+            File dir = new File(root.getAbsolutePath() + APP_FOLDER);
             dir.mkdirs();
-            File img=new File(dir,prefix + number + ".jpg");
+
+            File img = new File(dir, prefix + number + ".jpg");
 
             try {
-                FileOutputStream of=new FileOutputStream(img);
+                FileOutputStream of = new FileOutputStream(img);
                 of.write(bytes);
                 of.close();
             } catch (FileNotFoundException e) {
@@ -117,21 +124,18 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 // TODO Do something about this exception
                 e.printStackTrace();
-                Log.e("FILE", e.getMessage());
             }
         }
     }
 
-    private void setPermissions(){
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA},
-                PERMISSIONS_REQUEST_CAPTURE_IMAGE);
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+    private void setPermissions() {
+        ActivityCompat.requestPermissions(
+                this,
+                new String[] {
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },
+                PERMISSIONS_REQUEST_CODE);
     }
 
     @Override
@@ -141,17 +145,16 @@ public class MainActivity extends Activity {
             case PERMISSIONS_REQUEST_CODE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    String p="";
-                    long n=0;
-                    SavePictureCallback savePictureCallback=new SavePictureCallback(p,n);
-                    savePictureCallback.onPictureTaken(bytes,camera);
+                    useCamera = true;
+                    extStorage = true;
                 } else {
-                    Toast.makeText(getApplicationContext(),
-                            "SMS sending faild, please try again.", Toast.LENGTH_LONG).show();
-                    return;
+                    Toast.makeText(
+                            getApplicationContext(),
+                            "Cannot use permissions.",
+                            Toast.LENGTH_LONG
+                    ).show();
                 }
                 break;
-
         }
     }
 
